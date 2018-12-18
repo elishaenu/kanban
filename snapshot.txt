@@ -1,0 +1,114 @@
+import React, { Component } from 'react';
+
+function updateTask(tasks, id, status) {
+  // return tasks.filter((task) => task.boardsId < 3).map((task) => {
+    return tasks.map((task) => {
+    if (task.id === id && task.boardsId < 3 && status==="next") {
+      task.boardsId += 1;
+      console.log(task.boardsId + " " + status);
+    }
+    else if (task.id === id && task.boardsId > 1 && status==="prev") {
+      task.boardsId -= 1;
+      console.log(task.boardsId + " " + status);
+    }
+    return task;
+  })
+}
+
+function hapusTask(tasks,id){
+  return tasks.filter((task) => task.id !==id);
+}
+
+class Kanban extends Component {
+  constructor(props){
+    super(props);
+    this.state =
+      {
+        boards: {},
+        tasks: []
+      }
+    this.changeStatus = this.changeStatus.bind(this);
+    this.addNewTask = this.addNewTask.bind(this);
+  }
+
+  componentDidMount() {
+    this.setState(
+      {
+        boards: {
+          1: 'to do list',
+          2: 'in progress',
+          3: 'done'
+      },
+        tasks: [
+          { id: 1, taskName: 'Task pertama', boardsId: 1},
+          { id: 2, taskName: 'Task kedua', boardsId: 1},
+          { id: 3, taskName: 'Task ketiga', boardsId: 1},
+          { id: 4, taskName: 'Task keempat', boardsId: 1}
+        ]
+      }
+     )
+  }
+
+  changeStatus(id, status){
+    const tasks = this.state.tasks;
+    let newTasks = tasks;
+    newTasks = updateTask(tasks, id, status)
+    this.setState({
+      tasks: newTasks
+    });
+  }
+
+  deleteTask(id){
+    const tasks = this.state.tasks;
+    let deleteTasks = tasks;
+    deleteTasks = hapusTask(tasks, id)
+    this.setState({
+      tasks: deleteTasks
+    });
+  }
+
+  addNewTask(event){
+    event.preventDefault();
+    let x = this.state.tasks.map(t => t.id);
+    let maxx = Math.max(...x);
+    let newTask = [{id: maxx+1, taskName: this.textInput.value, boardsId: 1}];
+    this.setState({
+      tasks: this.state.tasks.concat(newTask)
+    });
+    this.textInput.value = "";
+  }
+
+  render() {
+    const { tasks, boards } = this.state;
+    const listTasks = tasks.map((task) =>
+      <div>
+        {task.boardsId > 1 && (<button onClick={()=>this.changeStatus(task.id, "prev")}>
+          Prev
+        </button>)}
+        {/* <div key={task.id} onClick={() => this.changeStatus(task.id)}> */}
+          {task.taskName}, status = {boards[task.boardsId]}
+        {/* </div> */}
+        {task.boardsId < 3 && (<button onClick={()=>this.changeStatus(task.id, "next")}>
+          Next
+        </button>)}
+        <input type="button" value="delete" onClick={() => this.deleteTask(task.id)}/>
+      </div>
+    );
+    return (
+      <React.Fragment>
+        {listTasks}
+
+        <form onSubmit={this.addNewTask}>
+          <input type="text"
+              required
+              placeholder="Task Name"
+              ref={(input) => this.textInput = input}
+          />
+          <button type="submit">Add</button>
+        </form>
+      </React.Fragment>
+    );
+  }
+}
+
+export default Kanban;
